@@ -1,0 +1,323 @@
+{
+  "info": {
+    "_postman_id": "fuel-route-api-collection-v1",
+    "name": "Backend Django Fuel Route API",
+    "description": "Fuel-optimised route planning API. Calculates the cheapest fuel stops for a driving route across the USA.\n\n## Setup\n1. Start the Django server: `python manage.py runserver`\n2. Ensure fuel stations are imported: `python manage.py import_fuel_stations data/fuel-prices-for-be-assessment.csv`\n3. Ensure stations are geocoded: `python manage.py geocode_fuel_stations`\n4. Use the `base_url` environment variable or update the host below.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string",
+      "description": "Base URL for the API server"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/health/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "health",
+            ""
+          ]
+        },
+        "description": "Returns the health status of the API, including database statistics and vehicle configuration."
+      },
+      "response": [
+        {
+          "name": "Health Check - Success",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n    \"status\": \"ok\",\n    \"service\": \"Fuel Route API\",\n    \"version\": \"1.0.0\",\n    \"database\": {\n        \"fuel_stations_total\": 8151,\n        \"fuel_stations_geocoded\": 8100\n    },\n    \"vehicle\": {\n        \"max_range_miles\": 500,\n        \"fuel_efficiency_mpg\": 10\n    },\n    \"routing_provider\": \"OSRM (router.project-osrm.org)\",\n    \"geocoding_provider\": \"Nominatim (nominatim.openstreetmap.org)\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "2. Calculate Route — New York to Chicago",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"start\": \"New York, NY\",\n    \"finish\": \"Chicago, IL\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/route/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "route",
+            ""
+          ]
+        },
+        "description": "Calculate the fuel-optimised driving route from New York, NY to Chicago, IL (~790 miles). This route requires 1-2 fuel stops given the 500-mile vehicle range."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Calculate Route — Los Angeles to New York (Long Distance)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"start\": \"Los Angeles, CA\",\n    \"finish\": \"New York, NY\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/route/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "route",
+            ""
+          ]
+        },
+        "description": "Calculate the fuel-optimised route from LA to New York (~2,800 miles). This is a long cross-country trip requiring 5-6 fuel stops."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Calculate Route — Dallas to Denver",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"start\": \"Dallas, TX\",\n    \"finish\": \"Denver, CO\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/route/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "route",
+            ""
+          ]
+        },
+        "description": "Calculate the fuel-optimised route from Dallas, TX to Denver, CO (~920 miles). Requires 1-2 fuel stops."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Calculate Route — Short (No Stop Needed)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"start\": \"New York, NY\",\n    \"finish\": \"Boston, MA\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/route/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "route",
+            ""
+          ]
+        },
+        "description": "A short route (~215 miles) that doesn't require a fuel stop. Shows empty fuel_stops array."
+      },
+      "response": []
+    },
+    {
+      "name": "6. Error — Invalid Location",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"start\": \"Xyzzy Land 99999\",\n    \"finish\": \"Chicago, IL\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/route/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "route",
+            ""
+          ]
+        },
+        "description": "Returns 404 INVALID_LOCATION when the start location cannot be geocoded."
+      },
+      "response": [
+        {
+          "name": "Error — Invalid Location",
+          "status": "Not Found",
+          "code": 404,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n    \"error\": {\n        \"code\": \"INVALID_LOCATION\",\n        \"message\": \"Unable to resolve the start location: No results found for location: 'Xyzzy Land 99999'.\"\n    }\n}"
+        }
+      ]
+    },
+    {
+      "name": "7. Error — Missing Start Field",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"finish\": \"Chicago, IL\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/route/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "route",
+            ""
+          ]
+        },
+        "description": "Returns 400 INVALID_REQUEST when the start field is missing."
+      },
+      "response": [
+        {
+          "name": "Error — Missing Start",
+          "status": "Bad Request",
+          "code": 400,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n    \"error\": {\n        \"code\": \"INVALID_REQUEST\",\n        \"message\": \"start: This field is required.\"\n    }\n}"
+        }
+      ]
+    },
+    {
+      "name": "8. Error — Same Start and Finish",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"start\": \"New York, NY\",\n    \"finish\": \"New York, NY\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/route/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "route",
+            ""
+          ]
+        },
+        "description": "Returns 400 when start and finish are the same location."
+      },
+      "response": []
+    }
+  ]
+}
